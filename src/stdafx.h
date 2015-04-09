@@ -73,3 +73,15 @@
 
 //#include "Util_MemoryTextFile.h"
 
+/* Define an internal macro that identifies UNIX or UNIX-like systems. */
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+#define UNIX_STYLE_OS
+#endif
+
+/* Added to fix bugs 1,2 & 3 from SourceForge. I experienced the bug on
+   Debian 7.6 on x86_64 but not on Debian 7.6 for PowerPC. I'm not sure
+   why there is a difference. They should have the same compiler and
+   headers. - Bill Chatfield 2015-04-09 */
+#ifdef UNIX_STYLE_OS
+#include <unistd.h>     /* usleep, read, write, close */
+#endif

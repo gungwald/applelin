@@ -1,3 +1,9 @@
+Changes for applelin 3.0:
+
+!! Renamed to applelin
+
+!! Added unistd.h include to fix compile failures
+
 For LinApple version 2.0 has been made:
 
 !! Fixed screen corruption bug for x64 systems
