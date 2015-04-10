@@ -43,6 +43,11 @@
 #include <SDL.h>
 #include <SDL_endian.h>
 
+/* This automatically figures out what the host's byte order is and
+   converts the Apple II byte order, which is little endian, to
+   the host's byte order, whatever it may be. So this does the right
+   thing for both PowerPC (big endian) and x86 (little endian) hosts.
+   This should be used like the TCP/IP network function ntohs. */
 #define APPLE2_2BYTE_ORDERING_TO_HOST(x) SDL_SwapLE16(x)
 #define APPLE2_4BYTE_ORDERING_TO_HOST(x) SDL_SwapLE32(x)
 
@@ -87,3 +92,4 @@
 #include "Video.h"
 
 //#include "Util_MemoryTextFile.h"
+
