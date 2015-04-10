@@ -30,6 +30,8 @@
 //#include <ddraw.h> - no need
 //#include <htmlhelp.h> - no need
 #include <SDL.h>
+#include <SDL_endian.h>
+#define CONVERT_16BIT_LITTLE_ENDIAN_TO_NATIVE(X) SDL_SwapLE16(X)
 
 
 #include "Common.h"
