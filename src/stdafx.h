@@ -19,7 +19,17 @@
 //#include <tchar.h>
 #include <time.h>
 
-#ifndef _WIN32
+/* Define an internal macro that identifies UNIX or UNIX-like systems. */
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+#define UNIX_STYLE_OS
+#endif
+
+#ifdef UNIX_STYLE_OS
+/* Added to fix bugs 1,2 & 3 from SourceForge. I experienced the bug on
+   Debian 7.6 on x86_64 but not on Debian 7.6 for PowerPC. I'm not sure
+   why there is a difference. They should have the same compiler and
+   headers. - Bill Chatfield 2015-04-09 */
+#include <unistd.h>     /* usleep, read, write, close */
 #include "wincompat.h"
 #else
 #include <windows.h>
@@ -29,7 +39,12 @@
 //#include <commctrl.h>
 //#include <ddraw.h> - no need
 //#include <htmlhelp.h> - no need
+
 #include <SDL.h>
+#include <SDL_endian.h>
+
+#define APPLE2_2BYTE_ORDERING_TO_HOST(x) SDL_SwapLE16(x)
+#define APPLE2_4BYTE_ORDERING_TO_HOST(x) SDL_SwapLE32(x)
 
 
 #include "Common.h"
@@ -72,16 +87,3 @@
 #include "Video.h"
 
 //#include "Util_MemoryTextFile.h"
-
-/* Define an internal macro that identifies UNIX or UNIX-like systems. */
-#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
-#define UNIX_STYLE_OS
-#endif
-
-/* Added to fix bugs 1,2 & 3 from SourceForge. I experienced the bug on
-   Debian 7.6 on x86_64 but not on Debian 7.6 for PowerPC. I'm not sure
-   why there is a difference. They should have the same compiler and
-   headers. - Bill Chatfield 2015-04-09 */
-#ifdef UNIX_STYLE_OS
-#include <unistd.h>     /* usleep, read, write, close */
-#endif

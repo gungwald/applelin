@@ -18,12 +18,11 @@ CXXFLAGS += $(CURL_CFLAGS)
 LDLIBS += $(SDL_LIBS) $(CURL_LIBS) -lz -lzip
 
 # Define executable and installing directory
-EXE = linapple
+EXE = applelin
 INSTDIR = /usr/local/$(EXE)
 STARTUP = /usr/local/bin/$(EXE)
 DATA = ../charset40.bmp ../font.bmp ../icon.bmp ../splash.bmp ../Master.dsk ../linapple.installed.conf
 
-#all: ../linapple
 all: $(EXE)
 
 Applewin: $(OBJS)

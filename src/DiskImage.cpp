@@ -404,7 +404,9 @@ BOOL AplBoot (imageinfoptr ptr) {
   WORD length  = 0;
   DWORD bytesread;
   ReadFile(ptr->file,&address,sizeof(WORD),&bytesread,NULL);
+  address = APPLE2_2BYTE_ORDERING_TO_HOST(address);
   ReadFile(ptr->file,&length ,sizeof(WORD),&bytesread,NULL);
+  length = APPLE2_2BYTE_ORDERING_TO_HOST(length);
   if ((((WORD)(address+length)) <= address) ||
       (address >= 0xC000) ||
       (address+length-1 >= 0xC000))
@@ -419,7 +421,7 @@ BOOL AplBoot (imageinfoptr ptr) {
 
 //===========================================================================
 DWORD AplDetect (LPBYTE imageptr, DWORD imagesize) {
-  DWORD length = *(LPWORD)(imageptr+2);
+  DWORD length = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(imageptr+2));
   return (((length+4) == imagesize) ||
           ((length+4+((256-((length+4) & 255)) & 255)) == imagesize));
 }
@@ -452,8 +454,8 @@ DWORD DoDetect (LPBYTE imageptr, DWORD imagesize) {
     int  loop     = 1;
     BOOL mismatch = 0;
     while ((loop++ < 5) && !mismatch)
-      if ((*(LPWORD)(imageptr+(loop << 9)+0x100) != ((loop == 5) ? 0 : 6-loop)) ||
-          (*(LPWORD)(imageptr+(loop << 9)+0x102) != ((loop == 2) ? 0 : 8-loop)))
+      if (APPLE2_2BYTE_ORDERING_TO_HOST((*(LPWORD)(imageptr+(loop << 9)+0x100)) != ((loop == 5) ? 0 : 6-loop)) ||
+          APPLE2_2BYTE_ORDERING_TO_HOST((*(LPWORD)(imageptr+(loop << 9)+0x102)) != ((loop == 2) ? 0 : 8-loop)))
         mismatch = 1;
     if (!mismatch)
       return 2;
@@ -540,10 +542,10 @@ void IieRead (imageinfoptr ptr, int track, int quartertrack, LPBYTE trackimagebu
   // OTHERWISE, IF THIS IMAGE CONTAINS NIBBLE INFORMATION, READ IT
   // DIRECTLY INTO THE TRACK BUFFER
   else {
-    *nibbles = *(LPWORD)(ptr->header+(track << 1)+14);
+    *nibbles = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(ptr->header+(track << 1)+14));
     DWORD offset = 88;
     while (track--)
-      offset += *(LPWORD)(ptr->header+(track << 1)+14);
+      offset += APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(ptr->header+(track << 1)+14));
     SetFilePointer(ptr->file,offset,NULL,FILE_BEGIN);
     ZeroMemory(trackimagebuffer,*nibbles);
     DWORD bytesread;
@@ -633,8 +635,8 @@ DWORD PoDetect (LPBYTE imageptr, DWORD imagesize) {
     int  loop     = 1;
     BOOL mismatch = 0;
     while ((loop++ < 5) && !mismatch)
-      if ((*(LPWORD)(imageptr+(loop << 9)  ) != ((loop == 2) ? 0 : loop-1)) ||
-          (*(LPWORD)(imageptr+(loop << 9)+2) != ((loop == 5) ? 0 : loop+1)))
+      if (APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(imageptr+(loop << 9)  ) != ((loop == 2) ? 0 : loop-1)) ||
+          APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(imageptr+(loop << 9)+2) != ((loop == 5) ? 0 : loop+1)))
         mismatch = 1;
     if (!mismatch)
       return 2;
@@ -676,7 +678,9 @@ BOOL PrgBoot (imageinfoptr ptr) {
   WORD length  = 0;
   DWORD bytesread;
   ReadFile(ptr->file,&address,sizeof(WORD),&bytesread,NULL);
+  address = APPLE2_2BYTE_ORDERING_TO_HOST(address);
   ReadFile(ptr->file,&length ,sizeof(WORD),&bytesread,NULL);
+  length = APPLE2_2BYTE_ORDERING_TO_HOST(length);
   length <<= 1;
   if ((((WORD)(address+length)) <= address) ||
       (address >= 0xC000) ||
@@ -693,7 +697,7 @@ BOOL PrgBoot (imageinfoptr ptr) {
 
 //===========================================================================
 DWORD PrgDetect (LPBYTE imageptr, DWORD imagesize) {
-  return (*(LPDWORD)imageptr == 0x214C470A) ? 2 : 0;
+  return (APPLE2_4BYTE_ORDERING_TO_HOST(*(LPDWORD)imageptr) == 0x214C470A) ? 2 : 0;
 }
 
 //

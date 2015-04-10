@@ -208,30 +208,30 @@ static volatile BOOL g_bNmiFlank = FALSE; // Positive going flank on NMI line
 *
 ***/
 
-#define ABS	 addr = *(LPWORD)(mem+regs.pc);	 regs.pc += 2;
-#define IABSX    addr = *(LPWORD)(mem+(*(LPWORD)(mem+regs.pc))+(WORD)regs.x); regs.pc += 2;
-#define ABSX	 base = *(LPWORD)(mem+regs.pc); addr = base+(WORD)regs.x; regs.pc += 2; CHECK_PAGE_CHANGE;
-#define ABSY	 base = *(LPWORD)(mem+regs.pc); addr = base+(WORD)regs.y; regs.pc += 2; CHECK_PAGE_CHANGE;
-#define IABSCMOS base = *(LPWORD)(mem+regs.pc);	                          \
-		 addr = *(LPWORD)(mem+base);		                  \
-		 if ((base & 0xFF) == 0xFF) uExtraCycles=1;		  \
+#define ABS	 addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+regs.pc)); regs.pc += 2;
+#define IABSX    addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+(*(LPWORD)(mem+regs.pc))+(WORD)regs.x)); regs.pc += 2;
+#define ABSX	 base = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+regs.pc)); addr = base+(WORD)regs.x; regs.pc += 2; CHECK_PAGE_CHANGE;
+#define ABSY	 base = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+regs.pc)); addr = base+(WORD)regs.y; regs.pc += 2; CHECK_PAGE_CHANGE;
+#define IABSCMOS base = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+regs.pc)); \
+		 addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+base));    \
+		 if ((base & 0xFF) == 0xFF) uExtraCycles=1;		   \
 		 regs.pc += 2;
-#define IABSNMOS base = *(LPWORD)(mem+regs.pc);	                          \
+#define IABSNMOS base = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+regs.pc));                          \
 		 if ((base & 0xFF) == 0xFF)				  \
 		       addr = *(mem+base)+((WORD)*(mem+(base&0xFF00))<<8);\
-		   else                                                   \
-		       addr = *(LPWORD)(mem+base);                        \
+		 else                                                     \
+		       addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+base));                        \
 		 regs.pc += 2;
 #define IMM	 addr = regs.pc++;
 #define INDX	 base = ((*(mem+regs.pc++))+regs.x) & 0xFF;          \
 		 if (base == 0xFF)                                   \
 		     addr = *(mem+0xFF)+(((WORD)*mem)<<8);           \
 		 else                                                \
-		     addr = *(LPWORD)(mem+base);
+		     addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+base));
 #define INDY	 if (*(mem+regs.pc) == 0xFF)                         \
 		     base = *(mem+0xFF)+(((WORD)*mem)<<8);           \
 		 else                                                \
-		     base = *(LPWORD)(mem+*(mem+regs.pc));           \
+		     base = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+*(mem+regs.pc))); \
 		 regs.pc++;                                          \
 		 addr = base+(WORD)regs.y;                           \
 		 CHECK_PAGE_CHANGE;
@@ -239,7 +239,7 @@ static volatile BOOL g_bNmiFlank = FALSE; // Positive going flank on NMI line
 		 if (base == 0xFF)                                   \
 		     addr = *(mem+0xFF)+(((WORD)*mem)<<8);           \
 		 else                                                \
-		     addr = *(LPWORD)(mem+base);
+		     addr = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+base));
 #define REL	 addr = (signed char)*(mem+regs.pc++);
 
 // Optimiation note:
@@ -396,7 +396,7 @@ static volatile BOOL g_bNmiFlank = FALSE; // Positive going flank on NMI line
 		 EF_TO_AF						    \
 		 PUSH(regs.ps);						    \
 		 regs.ps |= AF_INTERRUPT;				    \
-		 regs.pc = *(LPWORD)(mem+0xFFFE);
+		 regs.pc = APPLE2_2BYTE_ORDERING_TO_HOST(*(LPWORD)(mem+0xFFFE));
 #define BVC	 if (!flagv) BRANCH_TAKEN;
 #define BVS	 if ( flagv) BRANCH_TAKEN;
 #define CLC	 flagc = 0;
@@ -863,7 +863,7 @@ static inline void NMI(ULONG& uExecutedCycles, UINT& uExtraCycles, BOOL& flagc, 
 		EF_TO_AF
 		PUSH(regs.ps & ~AF_BREAK)
 		regs.ps = regs.ps | AF_INTERRUPT & ~AF_DECIMAL;
-		regs.pc = * (WORD*) (mem+0xFFFA);
+		regs.pc = APPLE2_2BYTE_ORDERING_TO_HOST(*(WORD*) (mem+0xFFFA));
 		CYC(7)
 	}
 #endif
@@ -880,7 +880,7 @@ static inline void IRQ(ULONG& uExecutedCycles, UINT& uExtraCycles, BOOL& flagc, 
 		EF_TO_AF
 		PUSH(regs.ps & ~AF_BREAK)
 		regs.ps = regs.ps | AF_INTERRUPT & ~AF_DECIMAL;
-		regs.pc = * (WORD*) (mem+0xFFFE);
+		regs.pc = APPLE2_2BYTE_ORDERING_TO_HOST(* (WORD*) (mem+0xFFFE));
 		CYC(7)
 	}
 }
@@ -912,7 +912,7 @@ static DWORD Cpu65C02 (DWORD uTotalCycles)
 	WORD val;
 	AF_TO_EF
 	ULONG uExecutedCycles = 0;
-	BOOL bSlowerOnPagecross;		// Set if opcode writes to memory (eg. ASL, STA)
+	BOOL bSlowerOnPagecross = 0;		// Set if opcode writes to memory (eg. ASL, STA)
 	WORD base;
 	bool bBreakOnInvalid = false;
 
@@ -1212,7 +1212,7 @@ static DWORD Cpu6502 (DWORD uTotalCycles)
 	WORD val;
 	AF_TO_EF
 	ULONG uExecutedCycles = 0;
-	BOOL bSlowerOnPagecross;		// Set if opcode writes to memory (eg. ASL, STA)
+	BOOL bSlowerOnPagecross = 0;		// Set if opcode writes to memory (eg. ASL, STA)
 	WORD base;
 	bool bBreakOnInvalid = false;
 
@@ -1631,7 +1631,8 @@ void CpuSetupBenchmark ()
 			if ((++opcode >= BENCHOPCODES) || ((addr & 0x0F) >= 0x0B))
 			{
 				*(mem+addr++) = 0x4C;
-				*(mem+addr++) = (opcode >= BENCHOPCODES) ? 0x00 : ((addr >> 4)+1) << 4;
+				*(mem+addr) = (opcode >= BENCHOPCODES) ? 0x00 : ((addr >> 4)+1) << 4;
+                                addr++;
 				*(mem+addr++) = 0x03;
 				while (addr & 0x0F)
 					++addr;
@@ -1701,7 +1702,7 @@ void CpuReset()
 {
 	// 7 cycles
 	regs.ps = (regs.ps | AF_INTERRUPT) & ~AF_DECIMAL;
-	regs.pc = * (WORD*) (mem+0xFFFC);
+	regs.pc = APPLE2_2BYTE_ORDERING_TO_HOST(* (WORD*) (mem+0xFFFC));
 	regs.sp = 0x0100 | ((regs.sp - 3) & 0xFF);
 
 	regs.bJammed = 0;
