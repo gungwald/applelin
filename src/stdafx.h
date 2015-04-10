@@ -31,8 +31,16 @@
 //#include <htmlhelp.h> - no need
 #include <SDL.h>
 #include <SDL_endian.h>
-#define CONVERT_16BIT_LITTLE_ENDIAN_TO_NATIVE(X) SDL_SwapLE16(X)
 
+/* This automatically figures out what the host's byte order is and
+   converts the Apple II byte order, which is little endian, to
+   the host's byte order, whatever it may be. So this does the right
+   thing for both PowerPC (big endian) and x86 (little endian) hosts.
+   This should be used like the TCP/IP network function ntohs. */
+#define APPLEII_BYTE_ORDER_TO_HOST(X) SDL_SwapLE16(X)
+/* For Apple II it is always a 16-bit value because the Apple II
+   only deals with 8-bit and 16-bit values and an 8-bit value
+   does not need swapping. */
 
 #include "Common.h"
 #include "Structs.h"
