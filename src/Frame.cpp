@@ -624,7 +624,7 @@ void	FrameDispatchMessage(SDL_Event * e) // process given SDL event
         break;
 
     case SDL_KEYDOWN:
-//	    printf("keyb %d is down!\n", mysym);
+	    printf("keyb %d is down!\n", mysym);
 	    if(mysym >= SDLK_0 && mysym <= SDLK_9 && mymod & KMOD_CTRL) {
 		    FrameQuickState(mysym - SDLK_0, mymod);
 		    break;

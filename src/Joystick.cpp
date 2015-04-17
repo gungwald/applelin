@@ -275,6 +275,8 @@ void JoyInitialize ()
 
 BOOL JoyProcessKey (int virtkey, BOOL extended, BOOL down, BOOL autorep)
 {
+  printf("Entering JoyProcessKey: virtkey=%d extended=%d down=%d autorep=%d\n", virtkey, extended, down, autorep);
+
   BOOL isALT = ((virtkey == SDLK_LALT) | (virtkey == SDLK_RALT)); //if either ALT key pressed
   if( (joyinfo[joytype[0]].device != DEVICE_KEYBOARD) &&
 	  (joyinfo[joytype[1]].device != DEVICE_KEYBOARD) &&
@@ -291,7 +293,9 @@ BOOL JoyProcessKey (int virtkey, BOOL extended, BOOL down, BOOL autorep)
   if (isALT /*virtkey == VK_MENU*/) // VK_MENU == ALT Key (Button #0 or #1)
   {
     keychange = 1;
-    keydown[JK_OPENAPPLE + (extended != 0)] = down;
+    //keydown[JK_OPENAPPLE + (extended != 0)] = down;
+    keydown[JK_OPENAPPLE] = down;
+    printf("JK_OPENAPPLE=%d extended=%d index=%d\n", JK_OPENAPPLE, extended, JK_OPENAPPLE+(extended!=0));
   }
   else if (!extended)
   {
@@ -384,13 +388,16 @@ BOOL JoyProcessKey (int virtkey, BOOL extended, BOOL down, BOOL autorep)
     }
   }
 
+  printf("Exiting Joy: keychange=%d\n\n", keychange);
   return keychange;
 }
 
 //===========================================================================
 
-BYTE /*__stdcall */ JoyReadButton (WORD, WORD address, BYTE, BYTE, ULONG nCyclesLeft)
+BYTE /*__stdcall */ JoyReadButton (WORD pc, WORD address, BYTE bWrite, BYTE d, ULONG nCyclesLeft)
 {
+  printf("Entering JoyReadButton: pc=%hX address=%hX bWrite=%hhu d=%hhu nCyclesLeft=%u\n", pc, address, bWrite, d, nCyclesLeft);
+
   address &= 0xFF;
 
   if(joyinfo[joytype[0]].device == DEVICE_JOYSTICK)
@@ -402,6 +409,7 @@ BYTE /*__stdcall */ JoyReadButton (WORD, WORD address, BYTE, BYTE, ULONG nCycles
   switch (address) {
 
     case 0x61:
+      printf("Recognized address $C061: open_apple=%d\n", keydown[JK_OPENAPPLE]);
       pressed = (buttonlatch[0] || joybutton[0] || setbutton[0] || keydown[JK_OPENAPPLE]);
 	  if(joyinfo[joytype[1]].device != DEVICE_KEYBOARD)
 	      pressed = (pressed || keydown[JK_BUTTON0]);
@@ -422,7 +430,9 @@ BYTE /*__stdcall */ JoyReadButton (WORD, WORD address, BYTE, BYTE, ULONG nCycles
       break;
 
   }
-  return MemReadFloatingBus(pressed, nCyclesLeft);
+  BYTE result = MemReadFloatingBus(pressed, nCyclesLeft);
+  printf("Exiting JoyReadButton: pressed=%d result=%d\n\n", pressed, result);
+  return result;
 }
 
 //===========================================================================

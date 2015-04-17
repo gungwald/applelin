@@ -144,6 +144,8 @@ void KeybUpdateCtrlShiftStatus()
 	g_bShiftKey = (keys[SDLK_LSHIFT] | keys[SDLK_RSHIFT]); // 0x8000 KF_UP   SHIFT
 	g_bCtrlKey  = (keys[SDLK_LCTRL]  | keys[SDLK_RCTRL]);	// CTRL
 	g_bAltKey   = (keys[SDLK_LALT]   | keys[SDLK_RALT]);	// ALT
+
+	printf("Shift=%d Ctrl=%d Alt=%d\n", g_bShiftKey, g_bCtrlKey, g_bAltKey);
 }
 
 //===========================================================================
@@ -163,6 +165,8 @@ DWORD KeybGetNumQueries ()	// Used in determining 'idleness' of Apple system
 //===========================================================================
 void KeybQueueKeypress (int key, BOOL bASCII)
 {
+    printf("\nKeybQueueKeypress: key=%c,%X bASCII=%d\n", key, key, bASCII);
+
 //	static bool bFreshReset; - do not use
 
 	if (bASCII == ASCII)
@@ -217,6 +221,8 @@ void KeybQueueKeypress (int key, BOOL bASCII)
 
 		if (!IS_APPLE2)
 		{
+                        printf("Not APPLE2\n");
+
 			if (g_bCapsLock && (key >= 'a') && (key <='z'))
 				keycode = key - 32;
 			else
@@ -224,6 +230,8 @@ void KeybQueueKeypress (int key, BOOL bASCII)
 		}
 		else
 		{
+                        printf("Is APPLE2\n");
+
 			if (key >= '`')
 				keycode = key - 32;
 			else
@@ -308,6 +316,7 @@ void KeybQueueKeypress (int key, BOOL bASCII)
 	if(bOverflow)
 		g_nNextOutIdx = (g_nNextOutIdx + 1) % g_nKeyBufferSize;
 #endif
+    printf("key=%c,%X\n\n", key, key);
 }
 
 //===========================================================================

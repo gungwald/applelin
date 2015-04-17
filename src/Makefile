@@ -1,6 +1,6 @@
 CXX ?= c++
-CXXFLAGS ?= -O3
-CXXFLAGS += -Wall
+CXXFLAGS ?= -O2
+CXXFLAGS += -Wall -g
 
 OBJS := $(filter-out Applewin.cpp Util_MemoryTextFile.cpp,$(wildcard *.cpp))
 OBJS := $(OBJS:.cpp=.o)
@@ -30,7 +30,7 @@ Applewin: $(OBJS)
 $(EXE): Applewin
 #	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 	mv $^ $@
-	strip $@
+	#strip $@
 	@echo " o If there are no errors, $(EXE) compiled succesfully"
 	cp $@ ../
 
